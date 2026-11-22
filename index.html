@@ -1441,8 +1441,16 @@ function doSubmit(){
     ? "🎉 Xuất sắc! Em đạt " + score + "/10 điểm. Em đã nắm chắc kiến thức về base và thang pH rồi!"
     : "Em đạt " + score + "/10 điểm. Hãy xem lại phần giải thích ở các câu chưa đúng rồi làm lại nhé!";
   banner.scrollIntoView({ behavior: "smooth", block: "center" });
-  /* CHỜ /exec — Bài 9 chưa có link Apps Script (Google đang chặn tạo dự án mới).
-     Parent sẽ patch fetch gửi điểm về Google Sheets sau. Điểm vẫn lưu localStorage. */
+  if (!scoreSent) {
+    scoreSent = true;
+    try {
+      var secs = Math.max(0, Math.round((Date.now() - (quizStartTime || Date.now())) / 1000));
+      var dur = Math.floor(secs / 60) + " phút " + (secs % 60) + " giây";
+      var detail = QUESTIONS.map(function(item, qi){ return (qi + 1) + ": " + (answers[qi] < 0 ? "-" : LETTERS[answers[qi]]) + "/" + LETTERS[item.ans]; }).join(", ");
+      fetch("https://script.google.com/macros/s/AKfycbyazYuaBgV4mO3IAhHwzfjE_vsRHhEwRiV19DnkIGI7aVNxml0oB1w4i27cPLXxrh_yWA/exec", {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body: JSON.stringify({name: currentStudent.name, className: currentStudent.cls, score: score, correct: score, detail: detail, duration: dur})}).catch(function(){});
+    } catch (e) {}
+  }
+  
   scoreSent = true;
 }
 var quizModal = document.getElementById("quizModal");
